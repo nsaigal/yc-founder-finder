@@ -95,30 +95,39 @@ def start(url, username, password, vision_model):
         driver.save_screenshot(ss_path)
 
         # Evaluate the profile using the vision model
-        explanation = json.loads(evaluate_profile(vision_model, ss_path))
-        
-        if explanation.get('is_good_fit', False):
+        evaluation = evaluate_profile(vision_model, ss_path)
+
+        if evaluation.get('is_good_fit', False):
             try:
-                if explanation.get('personalized_intro_message'):
+                if evaluation.get('personalized_intro_message', '') != '':
                     # Save the profile screenshot
                     os.makedirs('saved_profiles', exist_ok=True)
                     saved_ss_path = os.path.join('saved_profiles', ss_path)
                     shutil.copy(ss_path, saved_ss_path)
 
                     # Write a personalized message to the candidate
-                    write_message(driver, explanation['personalized_intro_message'])
-                    try:
-                        perform_action(driver, 'send')
-                    except Exception:
-                        perform_action(driver, 'skip')
+                    write_message(driver, evaluation['personalized_intro_message'])
+                    perform_action(driver, 'send')
+                else:
+                    # Save profile to favorites
+                    perform_action(driver, 'save')
             except Exception:
                 perform_action(driver, 'skip')
         else:
             perform_action(driver, 'skip')
         
+        # Wait for the next profile to load
+        WebDriverWait(driver, 10).until(
+            EC.url_changes(url)
+        )
+        
+        # Wait for the page content to be present
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "page-content"))
+        )
+
         # Remove the screenshot after processing
         os.remove(ss_path)
-        perform_action(driver, 'next')
 
     driver.quit()
 

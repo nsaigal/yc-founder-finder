@@ -23,16 +23,14 @@ class GPT4V(Vision):
                     Here is my criteria:
                     {criteria}
 
-                    ''' + '''If they are a good fit, you need to respond with valid JSON: {
-                        "is_good_fit": true,
-                        "personalized_intro_message": "<message>"
-                    }
-                    
-                    If they are not a good fit, you need to respond with valid JSON: {
-                        "is_good_fit": false,
-                        "personalized_intro_message": ""
+                    Use the JSON schema in your response:
+                    ''' + '''
+                    {
+                        "is_good_fit": boolean,
+                        "personalized_intro_message": string
                     }
 
+                    If is_good_fit is false, leave personalized_intro_message as an empty string.
                     The message to the user should be concise, informal, friendly, and personalized based on the profile. Include in your message the mention that our profiles are a good match and ask if they want to jump on a quick zoom call to discuss further.
                     Do not include any other text in your response.
                     '''
