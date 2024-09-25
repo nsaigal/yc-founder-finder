@@ -35,6 +35,7 @@ You should already have a YC account. If not, you can sign up for one [here](htt
 4. Set up your `.env` file with the following variables:
    ```
    OPENAI_API_KEY=your_openai_api_key
+   ANTHROPIC_API_KEY=your_anthropic_api_key # Optional
    YC_USERNAME=your_yc_username
    YC_PASSWORD=your_yc_password
    ```
@@ -50,6 +51,11 @@ python main.py
 Optionally, you can use the --local flag to run an open source model (e.g. LLaVA) locally using Ollama.
 ```
 python main.py --local
+```
+
+You also have the option to use the --claude flag to run Anthropic's Claude 3 Opus model.
+```
+python main.py --claude
 ```
 
 ## 📄 License

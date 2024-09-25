@@ -14,6 +14,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 from vision.gpt4v import GPT4V
 from vision.llava import LLaVA
+from vision.claude3opus import Claude3Opus
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -134,6 +135,7 @@ def start(url, username, password, vision_model):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find YC co-founder matches using vision models")
     parser.add_argument("--local", action="store_true", help="Use local LLaVA model instead of remote GPT-4V")
+    parser.add_argument("--claude", action="store_true", help="Use local Claude3Opus model instead of remote GPT-4V")
     args = parser.parse_args()
 
     url = "https://www.startupschool.org/cofounder-matching/candidate/next"
@@ -141,12 +143,12 @@ if __name__ == "__main__":
     password = os.getenv("YC_PASSWORD")
     
     # Choose the vision model based on the argument
-    vision_model = LLaVA(host="http://localhost:11434") if args.local else GPT4V()
+    vision_model = LLaVA(host="http://localhost:11434") if args.local else GPT4V() if not args.claude else Claude3Opus()
     
     if args.local and not vision_model.ping():
         print("LLaVA model not running. Please start LLaVA locally.")
         exit(1)
     
-    print(f"Using {'local LLaVA' if args.local else 'OpenAI GPT-4V'} model")
+    print(f"Using {'local LLaVA' if args.local else 'OpenAI GPT-4V' if not args.claude else 'Anthropic Claude 3 Opus'} model")
     
     start(url, username, password, vision_model)
