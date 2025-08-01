@@ -12,9 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 
-from vision.gpt4v import GPT4V
-from vision.llava import LLaVA
-from vision.claude3opus import Claude3Opus
+from vision import Vision
 
 # Load environment variables from a .env file
 load_dotenv()
@@ -23,27 +21,157 @@ def setup_driver():
     # Set up and configure the Chrome WebDriver
     chrome_options = Options()
     chrome_options.add_argument("--window-size=1920,1080")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--remote-debugging-port=9222")
     # chrome_options.add_argument("--headless")  # Uncomment for headless mode
-    service = Service(ChromeDriverManager().install())
-    return webdriver.Chrome(service=service, options=chrome_options)
+    
+    # Try to find Chrome in common locations
+    chrome_paths = [
+        "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",  # macOS
+        "/usr/bin/google-chrome",  # Linux
+        "/usr/bin/chromium-browser",  # Linux alternative
+        "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",  # Windows
+        "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",  # Windows 32-bit
+    ]
+    
+    chrome_found = False
+    for path in chrome_paths:
+        if os.path.exists(path):
+            chrome_options.binary_location = path
+            chrome_found = True
+            break
+    
+    if not chrome_found:
+        print("⚠️  Chrome not found in common locations. Trying to use system default...")
+        print("💡 If this fails, please install Chrome or specify the path manually.")
+    
+    try:
+        # Try using the system ChromeDriver first
+        service = Service("/opt/homebrew/bin/chromedriver")
+        return webdriver.Chrome(service=service, options=chrome_options)
+    except Exception as e:
+        print(f"❌ Failed with system ChromeDriver: {e}")
+        try:
+            # Fallback to webdriver-manager
+            service = Service(ChromeDriverManager().install())
+            return webdriver.Chrome(service=service, options=chrome_options)
+        except Exception as e2:
+            print(f"❌ Failed to start Chrome: {e2}")
+            print("🔧 Please ensure Chrome is installed and try again.")
+            print("📥 Download Chrome from: https://www.google.com/chrome/")
+            print("💡 Try running: brew install --cask google-chrome")
+            raise
 
 def login(driver, username, password):
     # Log in to the YC Startup School website
-    username_field = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "ycid-input")))
-    username_field.send_keys(username)
+    print("🔐 Attempting to log in...")
     
-    password_field = driver.find_element(By.ID, "password-input")
-    password_field.send_keys(password)
-    
-    login_button = driver.find_element(By.CLASS_NAME, "sign-in-button")
-    login_button.click()
+    try:
+        # Wait for page to load
+        WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, "body")))
+        
+        # Try different possible selectors for username field
+        username_selectors = [
+            (By.ID, "ycid-input"),
+            (By.NAME, "email"),
+            (By.NAME, "username"),
+            (By.CSS_SELECTOR, "input[type='email']"),
+            (By.CSS_SELECTOR, "input[placeholder*='email']"),
+            (By.CSS_SELECTOR, "input[placeholder*='Email']")
+        ]
+        
+        username_field = None
+        for selector in username_selectors:
+            try:
+                username_field = WebDriverWait(driver, 3).until(EC.presence_of_element_located(selector))
+                print(f"✅ Found username field with selector: {selector}")
+                break
+            except:
+                continue
+        
+        if not username_field:
+            print("❌ Could not find username field. Taking screenshot for debugging...")
+            driver.save_screenshot("login_page_debug.png")
+            raise Exception("Username field not found")
+        
+        username_field.clear()
+        username_field.send_keys(username)
+        print("✅ Username entered")
+        
+        # Try different possible selectors for password field
+        password_selectors = [
+            (By.ID, "password-input"),
+            (By.NAME, "password"),
+            (By.CSS_SELECTOR, "input[type='password']")
+        ]
+        
+        password_field = None
+        for selector in password_selectors:
+            try:
+                password_field = driver.find_element(*selector)
+                print(f"✅ Found password field with selector: {selector}")
+                break
+            except:
+                continue
+        
+        if not password_field:
+            print("❌ Could not find password field")
+            raise Exception("Password field not found")
+        
+        password_field.clear()
+        password_field.send_keys(password)
+        print("✅ Password entered")
+        
+        # Try different possible selectors for login button
+        login_button_selectors = [
+            (By.CLASS_NAME, "sign-in-button"),
+            (By.CSS_SELECTOR, "button[type='submit']"),
+            (By.CSS_SELECTOR, "input[type='submit']"),
+            (By.XPATH, "//button[contains(text(), 'Sign In')]"),
+            (By.XPATH, "//button[contains(text(), 'Login')]"),
+            (By.XPATH, "//input[@value='Sign In']"),
+            (By.XPATH, "//input[@value='Login']")
+        ]
+        
+        login_button = None
+        for selector in login_button_selectors:
+            try:
+                login_button = driver.find_element(*selector)
+                print(f"✅ Found login button with selector: {selector}")
+                break
+            except:
+                continue
+        
+        if not login_button:
+            print("❌ Could not find login button")
+            raise Exception("Login button not found")
+        
+        login_button.click()
+        print("✅ Login button clicked")
+        
+    except Exception as e:
+        print(f"❌ Login failed: {e}")
+        print("📸 Taking screenshot for debugging...")
+        driver.save_screenshot("login_error_debug.png")
+        raise
 
 def evaluate_profile(vision_model, ss_path):
     # Evaluate a profile using the vision model
     prompt = "Evaluate the profile and tell me if they are a good fit for me."
-    response = vision_model.generate_response(prompt, [ss_path])
-    print(response)
-    return response
+    try:
+        response = vision_model.generate_response(prompt, [ss_path])
+        print(response)
+        return response
+    except Exception as e:
+        print(f"❌ AI evaluation failed: {e}")
+        print("🔄 Defaulting to skip this profile...")
+        # Return a default "skip" response
+        return {
+            "is_good_fit": False,
+            "personalized_intro_message": ""
+        }
 
 def perform_action(driver, action_type):
     # Perform a specific action on the webpage
@@ -76,7 +204,13 @@ def write_message(driver, message):
 
 def start(url, username, password, vision_model):
     driver = setup_driver()
+    print(f"🌐 Navigating to: {url}")
     driver.get(url)
+    
+    # Debug: Print current page info
+    print(f"📄 Current URL: {driver.current_url}")
+    print(f"📄 Page title: {driver.title}")
+    
     login(driver, username, password)
     
     # Wait until the page content is loaded
@@ -134,21 +268,18 @@ def start(url, username, password, vision_model):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Find YC co-founder matches using vision models")
-    parser.add_argument("--local", action="store_true", help="Use local LLaVA model instead of remote GPT-4V")
-    parser.add_argument("--claude", action="store_true", help="Use local Claude3Opus model instead of remote GPT-4V")
+    parser.add_argument("--provider", choices=["openai", "anthropic", "ollama"], 
+                       default="openai", help="Vision model provider to use")
+    parser.add_argument("--model", help="Specific model to use (optional)")
     args = parser.parse_args()
 
     url = "https://www.startupschool.org/cofounder-matching/candidate/next"
     username = os.getenv("YC_USERNAME")
     password = os.getenv("YC_PASSWORD")
     
-    # Choose the vision model based on the argument
-    vision_model = LLaVA(host="http://localhost:11434") if args.local else GPT4V() if not args.claude else Claude3Opus()
+    # Create vision model using the consolidated interface
+    vision_model = Vision(provider=args.provider, model=args.model)
     
-    if args.local and not vision_model.ping():
-        print("LLaVA model not running. Please start LLaVA locally.")
-        exit(1)
-    
-    print(f"Using {'local LLaVA' if args.local else 'OpenAI GPT-4V' if not args.claude else 'Anthropic Claude 3 Opus'} model")
+    print(f"Using {args.provider} model: {vision_model.model}")
     
     start(url, username, password, vision_model)

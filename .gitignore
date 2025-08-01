@@ -8,4 +8,5 @@ venv/
 # OS generated files
 .DS_Store
 
-ocr.py
+/saved_profiles/
+*.png

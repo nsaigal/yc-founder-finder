@@ -2,61 +2,83 @@
 
 # YC Founder Finder
 
-This project aims to automate the process of evaluating potential co-founders from the Y Combinator (YC) co-founder matching program. It uses AI-powered image analysis to assess candidate profiles and determine if they're a good fit based on customizable criteria.
+> **Your AI wingman for finding the perfect co-founder**
 
-## ✨ Features
+Instead of scrolling YC's co-founder matching site (Hinge for founders), I decided to test out a few vision models to see if it could screen potential co-founders for me.
 
-- Automatically navigates through YC co-founder profiles
-- Uses GPT-4 Vision to analyze profile screenshots
-- Evaluates candidates based on customizable criteria
-- Sends personalized messages to candidates if they're a good fit
+Here's how it works:
 
-## 🔍 How It Works
+1. **🤖 Automated Navigation**: Uses Selenium to browse profiles.
+2. **👁️ AI-Powered Analysis**: Takes screenshots and uses vision models to analyze them.
+3. **🎯 Smart Filtering**: Evaluates candidates against your criteria.
+4. **💬 Smart Outreach**: Sends personalized messages to promising matches.
+5. **🔄 Multi-Provider Support**: Works with OpenAI, Anthropic, and Ollama.
 
-1. The `main.py` script logs into the YC co-founder matching platform and iterates through candidate profiles.
-2. For each profile, it takes a screenshot and passes it to the `gpt4v.py` module.
-3. `gpt4v.py` uses OpenAI's GPT-4 Vision API to analyze the profile image based on the criteria specified in `criteria.txt`.
-4. If a candidate is deemed a good fit, the script can optionally save the profile and send a personalized message.
+### Supported Providers
 
-## 🛠️ Setup
+We use LiteLLM to make it easy to swap out various vLLM model providers.
 
-You should already have a YC account. If not, you can sign up for one [here](https://www.ycombinator.com/cofounder-matching).
+- **🤖 OpenAI**
+- **🧠 Anthropic**
+- **🏠 Ollama**
 
-1. Clone this repository
-2. Create a virtual environment and activate it:
-    ```sh
-    python -m venv venv
-    source venv/bin/activate
-    ```
-3. Install the dependencies:
-    ```sh
-    pip install -r requirements.txt
-    ```
-4. Set up your `.env` file with the following variables:
+### Model Output
+
+We ask the model to simply output the following JSON schema:
+
+```json
+{
+  "is_good_fit": boolean,
+  "personalized_intro_message": string
+}
+```
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.8+
+- YC Startup School account ([sign up here](https://www.ycombinator.com/cofounder-matching))
+- API keys for your chosen vision model provider
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/yc-founder-finder.git
+   cd yc-founder-finder
    ```
-   OPENAI_API_KEY=your_openai_api_key
-   ANTHROPIC_API_KEY=your_anthropic_api_key # Optional
-   YC_USERNAME=your_yc_username
-   YC_PASSWORD=your_yc_password
+
+2. **Set up environment**
+   ```bash
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
    ```
-5. Customize the `criteria.txt` file to match your ideal co-founder preferences
 
-## 🚀 Usage
+3. **Configure your environment**
+   ```bash
+   cp env.example .env
+   # Edit .env with your credentials
+   ```
 
-Run the main script:
-```
-python main.py
-```
+4. **Customize your criteria**
+   Edit `criteria.txt` to match your ideal co-founder preferences. The current criteria focus on:
+   - Clear communication and self-awareness
+   - Technical building experience
+   - Startup mindset and iteration speed
+   - Generalist capabilities
+   - AI/LLM curiosity and experimentation
+   - Overall vibezzz
 
-Optionally, you can use the --local flag to run an open source model (e.g. LLaVA) locally using Ollama.
-```
-python main.py --local
-```
+### Basic Usage
 
-You also have the option to use the --claude flag to run Anthropic's Claude 3 Opus model.
-```
-python main.py --claude
+```bash
+python main.py --provider openai --model gpt-4o
+python main.py --provider anthropic --model claude-sonnet-4-20250514
+python main.py --provider ollama --ollama/gemma3:4b
 ```
 
 ## 📄 License
-This project is licensed under the MIT License.
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
