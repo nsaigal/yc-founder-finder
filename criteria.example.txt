@@ -1,0 +1,54 @@
+1. Clear, Insightful Self-Description
+They write or speak clearly about:
+	•	What they’re building or exploring — not just what but why.
+	•	Their current inflection point or learning goals.
+	•	Their worldview or mental models, especially around startups, product, or AI.
+
+🔍 Signal: A personal site, thoughtful Twitter/X posts, Substack, or a YC application-style bio.
+
+⸻
+
+2. Builder-First, Technical Enough to Ship
+They’ve built and shipped something meaningful — solo or as the technical founder. Could be:
+	•	A SaaS app, side project, automation tool, agent, or open-source repo.
+	•	Doesn’t have to be flashy — even a niche tool with a real user base counts.
+
+🔍 Signal: GitHub activity, Product Hunt posts, or indie hacker blog posts.
+
+⸻
+
+3. Startup-Native, Indie-Curious
+They default to fast iteration and doing things themselves. Ideally:
+	•	Prioritized velocity > polish.
+	•	Have worked at or founded early-stage startups, especially 0→1.
+	•	Bonus if they’ve bootstrapped something or earned internet money.
+
+🚫 Avoid: Career PMs or researchers who don’t ship.
+✅ Lean toward: Hacker-news readers, weekend builders, people who talk about customer feedback loops.
+
+⸻
+
+4. Generalist with Surface Area
+They’re not “just” an engineer or designer — they:
+	•	Think about GTM, UX, infra, and storytelling.
+	•	Wear multiple hats and enjoy context-switching.
+	•	Can zoom in (debug) and zoom out (product vision).
+
+🔍 Signal: Solo founder types, freelancers, ex-founders, or early employees wearing 3+ hats.
+
+⸻
+
+5. Deep Curiosity About AI + LLMs
+Not just “AI is cool,” but:
+	•	They’re running small experiments or tracking model updates.
+	•	They think about where LLMs break down or where they’re overkill.
+	•	Bonus if they have opinions on agent frameworks, fine-tuning, evals, etc.
+
+✅ Signal: They’ve posted about LangChain, GPT-4o, open-source models, or use AI in their workflows.
+
+⸻
+
+🧭 Bonus Filters
+	•	Open Energy: They’re excited to connect and co-inspire — not purely transactional.
+	•	Plugged In: They go to meetups, hang at hackerspaces, or know other people you should meet.
+	•	Future Collaborator Potential: You’d consider co-building something with them.

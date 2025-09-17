@@ -1,6 +1,6 @@
 # Web scraping and browser automation
-selenium
-webdriver-manager
+selenium>=4.15.0
+webdriver-manager>=4.0.0
 
 # Environment variables
 python-dotenv

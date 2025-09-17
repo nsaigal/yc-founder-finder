@@ -3,7 +3,7 @@ __pycache__/
 
 # Virtual Environment
 venv/
-.env.local
+.env
 
 # OS generated files
 .DS_Store

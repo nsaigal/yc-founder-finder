@@ -31,7 +31,7 @@ class Vision:
     def _get_default_model(self, provider):
         """Get default model for the provider"""
         defaults = {
-            "openai": "gpt-4o",
+            "openai": "gpt-4.1-mini",
             "anthropic": "claude-sonnet-4-20250514",
             "ollama": "ollama/gemma3:4b"
         }

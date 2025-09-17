@@ -25,6 +25,11 @@ def setup_driver():
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--remote-debugging-port=9222")
+    chrome_options.add_argument("--disable-web-security")
+    chrome_options.add_argument("--allow-running-insecure-content")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-plugins")
+    chrome_options.add_argument("--disable-images")
     # chrome_options.add_argument("--headless")  # Uncomment for headless mode
     
     # Try to find Chrome in common locations
@@ -48,21 +53,45 @@ def setup_driver():
         print("💡 If this fails, please install Chrome or specify the path manually.")
     
     try:
-        # Try using the system ChromeDriver first
-        service = Service("/opt/homebrew/bin/chromedriver")
-        return webdriver.Chrome(service=service, options=chrome_options)
+        # Try using Chrome's built-in ChromeDriver first (most reliable for version matching)
+        print("🔍 Trying Chrome's built-in ChromeDriver...")
+        return webdriver.Chrome(options=chrome_options)
     except Exception as e:
-        print(f"❌ Failed with system ChromeDriver: {e}")
+        print(f"❌ Failed with Chrome's built-in ChromeDriver: {e}")
         try:
-            # Fallback to webdriver-manager
-            service = Service(ChromeDriverManager().install())
+            # Try using the system ChromeDriver
+            service = Service("/opt/homebrew/bin/chromedriver")
             return webdriver.Chrome(service=service, options=chrome_options)
         except Exception as e2:
-            print(f"❌ Failed to start Chrome: {e2}")
-            print("🔧 Please ensure Chrome is installed and try again.")
-            print("📥 Download Chrome from: https://www.google.com/chrome/")
-            print("💡 Try running: brew install --cask google-chrome")
-            raise
+            print(f"❌ Failed with system ChromeDriver: {e2}")
+            try:
+                # Fallback to webdriver-manager with specific version handling
+                print("🔍 Trying webdriver-manager...")
+                try:
+                    service = Service(ChromeDriverManager().install())
+                    return webdriver.Chrome(service=service, options=chrome_options)
+                except ValueError as ve:
+                    if "There is no such driver" in str(ve):
+                        print("⚠️  ChromeDriver version mismatch detected. Trying with latest available version...")
+                        # Try with a more recent stable version that should work
+                        try:
+                            service = Service(ChromeDriverManager(version="131.0.6778.87").install())
+                            return webdriver.Chrome(service=service, options=chrome_options)
+                        except:
+                            # Try with an even more recent version
+                            service = Service(ChromeDriverManager(version="131.0.6778.108").install())
+                            return webdriver.Chrome(service=service, options=chrome_options)
+                    else:
+                        raise
+            except Exception as e3:
+                print(f"❌ Failed to start Chrome: {e3}")
+                print("🔧 Please ensure Chrome is installed and try again.")
+                print("📥 Download Chrome from: https://www.google.com/chrome/")
+                print("💡 Try running: brew install --cask google-chrome")
+                print("💡 Or try updating ChromeDriver: brew upgrade chromedriver")
+                print("💡 Or try: brew install chromedriver")
+                print("💡 Alternative: Try downgrading Chrome to a stable version")
+                raise
 
 def login(driver, username, password):
     # Log in to the YC Startup School website
@@ -276,6 +305,17 @@ if __name__ == "__main__":
     url = "https://www.startupschool.org/cofounder-matching/candidate/next"
     username = os.getenv("YC_USERNAME")
     password = os.getenv("YC_PASSWORD")
+    
+    # Check if credentials are provided
+    if not username or not password:
+        print("❌ Missing credentials!")
+        print("🔧 Please set the following environment variables:")
+        print("   YC_USERNAME=your_username")
+        print("   YC_PASSWORD=your_password")
+        print("💡 You can create a .env file in the project directory with:")
+        print("   YC_USERNAME=your_username_here")
+        print("   YC_PASSWORD=your_password_here")
+        exit(1)
     
     # Create vision model using the consolidated interface
     vision_model = Vision(provider=args.provider, model=args.model)
